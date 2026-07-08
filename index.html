@@ -428,6 +428,7 @@
     // ============================================
     const firebaseConfig = {
       apiKey: "AIzaSyB3fZqFl45iipkoqAtXBRwJFtj2-Q3jupw",
+      databaseURL: "https://dedji-notifications-default-rtdb.europe-west1.firebasedatabase.app",
       authDomain: "dedji-notifications.firebaseapp.com",
       projectId: "dedji-notifications",
       storageBucket: "dedji-notifications.firebasestorage.app",
@@ -544,12 +545,20 @@
         });
 
         if (fcmToken) {
-          console.log('Token FCM:', fcmToken);
-          document.getElementById('tokenValue').textContent = fcmToken;
-          document.getElementById('tokenBox').classList.add('visible');
-          localStorage.setItem('allio_token_' + pays, fcmToken);
-          afficherMessage('✅ Notifications activées pour ' + pays + ' ! Copie le token et envoie-le à l\'admin.', 'success');
-        }
+  console.log('Token FCM:', fcmToken);
+  document.getElementById('tokenValue').textContent = fcmToken;
+  document.getElementById('tokenBox').classList.add('visible');
+  localStorage.setItem('allio_token_' + pays, fcmToken);
+
+  // Enregistrement automatique dans la base (plus besoin de copier-coller)
+  const db = firebase.database();
+  await db.ref('tokens/' + pays + '/' + fcmToken).set({
+    token: fcmToken,
+    dateAjout: new Date().toISOString()
+  });
+
+  afficherMessage('✅ Notifications activées pour ' + pays + ' !', 'success');
+}
 
         verifierStatut();
         document.getElementById('activerBtn').disabled = false;
