@@ -381,6 +381,14 @@
 
   </div>
 
+  <!-- INFOS CLOSEUSE -->
+  <div class="card">
+    <div class="card-title">Mes informations</div>
+    <p class="pays-label">Ton nom et ton email (le même que celui utilisé pour accéder au Google Sheet)</p>
+    <input type="text" id="nomInput" placeholder="Ton nom complet" class="pays-select" style="margin-bottom: 10px;">
+    <input type="email" id="emailInput" placeholder="ton.email@exemple.com" class="pays-select">
+  </div>
+  
   <!-- SÉLECTION DU PAYS -->
   <div class="card">
     <div class="card-title">Mon pays</div>
@@ -468,11 +476,16 @@
   if (paysSauvegarde) {
     document.getElementById('paysSelect').value = paysSauvegarde;
   }
+
+  const nomSauvegarde = localStorage.getItem('allio_nom');
+  const emailSauvegarde = localStorage.getItem('allio_email');
+  if (nomSauvegarde) document.getElementById('nomInput').value = nomSauvegarde;
+  if (emailSauvegarde) document.getElementById('emailInput').value = emailSauvegarde;
   verifierStatut();
 
   // Réenregistrement silencieux si déjà autorisé (aucune action requise de la closeuse)
   if (paysSauvegarde && Notification.permission === 'granted') {
-    await enregistrerToken(paysSauvegarde, true);
+    await enregistrerToken(paysSauvegarde, nomSauvegarde, emailSauvegarde, true);
   }
 });
 
@@ -511,7 +524,7 @@
     // ============================================
 // ENREGISTRER LE TOKEN (utilisée pour l'activation ET le silencieux)
 // ============================================
-async function enregistrerToken(pays, silencieux) {
+async function enregistrerToken(pays, nom, email, silencieux) {
   try {
     const registration = await navigator.serviceWorker.register('/dedji-notifications/firebase-messaging-sw.js');
     fcmToken = await messaging.getToken({
@@ -526,6 +539,8 @@ async function enregistrerToken(pays, silencieux) {
       const db = firebase.database();
       await db.ref('tokens/' + pays + '/' + fcmToken).set({
         token: fcmToken,
+        nom: nom || '',
+        email: email || '',
         dateAjout: new Date().toISOString()
       });
 
@@ -546,12 +561,21 @@ async function enregistrerToken(pays, silencieux) {
     // ============================================
     async function activerNotifications() {
   const pays = document.getElementById('paysSelect').value;
+  const nom = document.getElementById('nomInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+
+  if (!nom || !email) {
+    afficherMessage('⚠️ Remplis ton nom et ton email', 'error');
+    return;
+  }
   if (!pays) {
     afficherMessage('⚠️ Sélectionne d\'abord ton pays', 'error');
     return;
   }
 
   localStorage.setItem('allio_pays', pays);
+  localStorage.setItem('allio_nom', nom);
+  localStorage.setItem('allio_email', email);
 
   try {
     document.getElementById('activerBtn').textContent = '⏳ Activation...';
@@ -565,7 +589,7 @@ async function enregistrerToken(pays, silencieux) {
       return;
     }
 
-    await enregistrerToken(pays, false);
+    await enregistrerToken(pays, nom, email, false);
 
     verifierStatut();
     document.getElementById('activerBtn').disabled = false;
