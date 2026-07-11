@@ -463,13 +463,18 @@
     // ============================================
     // CHARGER LE PAYS SAUVEGARDÉ
     // ============================================
-    window.addEventListener('load', () => {
-      const paysSauvegarde = localStorage.getItem('allio_pays');
-      if (paysSauvegarde) {
-        document.getElementById('paysSelect').value = paysSauvegarde;
-      }
-      verifierStatut();
-    });
+    window.addEventListener('load', async () => {
+  const paysSauvegarde = localStorage.getItem('allio_pays');
+  if (paysSauvegarde) {
+    document.getElementById('paysSelect').value = paysSauvegarde;
+  }
+  verifierStatut();
+
+  // Réenregistrement silencieux si déjà autorisé (aucune action requise de la closeuse)
+  if (paysSauvegarde && Notification.permission === 'granted') {
+    await enregistrerToken(paysSauvegarde, true);
+  }
+});
 
     // ============================================
     // VÉRIFIER LE STATUT DES NOTIFICATIONS
@@ -540,63 +545,40 @@ async function enregistrerToken(pays, silencieux) {
     // ACTIVER LES NOTIFICATIONS
     // ============================================
     async function activerNotifications() {
-      const pays = document.getElementById('paysSelect').value;
-      if (!pays) {
-        afficherMessage('⚠️ Sélectionne d\'abord ton pays', 'error');
-        return;
-      }
+  const pays = document.getElementById('paysSelect').value;
+  if (!pays) {
+    afficherMessage('⚠️ Sélectionne d\'abord ton pays', 'error');
+    return;
+  }
 
-      localStorage.setItem('allio_pays', pays);
+  localStorage.setItem('allio_pays', pays);
 
-      try {
-        document.getElementById('activerBtn').textContent = '⏳ Activation...';
-        document.getElementById('activerBtn').disabled = true;
+  try {
+    document.getElementById('activerBtn').textContent = '⏳ Activation...';
+    document.getElementById('activerBtn').disabled = true;
 
-        // Demander la permission
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          afficherMessage('❌ Permission refusée. Active les notifications dans les paramètres.', 'error');
-          verifierStatut();
-          document.getElementById('activerBtn').disabled = false;
-          return;
-        }
-
-        // Enregistrer le service worker
-        const registration = await navigator.serviceWorker.register('/dedji-notifications/firebase-messaging-sw.js');
-        console.log('Service Worker enregistré:', registration);
-
-        // Obtenir le token FCM
-        fcmToken = await messaging.getToken({
-          vapidKey: VAPID_KEY,
-          serviceWorkerRegistration: registration
-        });
-
-        if (fcmToken) {
-  console.log('Token FCM:', fcmToken);
-  localStorage.setItem('allio_token_' + pays, fcmToken);
-
-  // Enregistrement automatique dans la base (plus besoin de copier-coller)
-  const db = firebase.database();
-  await db.ref('tokens/' + pays + '/' + fcmToken).set({
-    token: fcmToken,
-    dateAjout: new Date().toISOString()
-  });
-
-  afficherMessage('✅ Notifications activées pour ' + pays + ' !', 'success');
-}
-
-        verifierStatut();
-        document.getElementById('activerBtn').disabled = false;
-        document.getElementById('activerBtn').textContent = '🔄 Rafraîchir le token';
-
-      } catch (error) {
-        console.error('Erreur:', error);
-        afficherMessage('❌ Erreur : ' + error.message, 'error');
-        document.getElementById('activerBtn').disabled = false;
-        document.getElementById('activerBtn').textContent = '🔔 Activer les notifications';
-        verifierStatut();
-      }
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      afficherMessage('❌ Permission refusée. Active les notifications dans les paramètres.', 'error');
+      verifierStatut();
+      document.getElementById('activerBtn').disabled = false;
+      return;
     }
+
+    await enregistrerToken(pays, false);
+
+    verifierStatut();
+    document.getElementById('activerBtn').disabled = false;
+    document.getElementById('activerBtn').textContent = '✅ Notifications activées';
+
+  } catch (error) {
+    console.error('Erreur:', error);
+    afficherMessage('❌ Erreur : ' + error.message, 'error');
+    document.getElementById('activerBtn').disabled = false;
+    document.getElementById('activerBtn').textContent = '🔔 Activer les notifications';
+    verifierStatut();
+  }
+}
 
     // ============================================
     // NOTIFICATIONS EN PREMIER PLAN
