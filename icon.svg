@@ -6,5 +6,9 @@
       <stop offset="100%" style="stop-color:#f5a623"/>
     </linearGradient>
   </defs>
-  <text x="96" y="130" font-size="100" text-anchor="middle" fill="white">🛒</text>
+  <g transform="translate(38,50)" fill="none" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 0h16l14 64h68l14-46H24"/>
+    <circle cx="40" cy="86" r="9" fill="white" stroke="none"/>
+    <circle cx="88" cy="86" r="9" fill="white" stroke="none"/>
+  </g>
 </svg>
