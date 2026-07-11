@@ -527,8 +527,11 @@
 // ============================================
 async function enregistrerToken(pays, nom, email, silencieux) {
   try {
-    await navigator.serviceWorker.register('/dedji-notifications/firebase-messaging-sw.js');
-const registration = await navigator.serviceWorker.ready;
+    let registration = await navigator.serviceWorker.getRegistration('/dedji-notifications/');
+    if (!registration || !registration.active) {
+      await navigator.serviceWorker.register('/dedji-notifications/firebase-messaging-sw.js');
+      registration = await navigator.serviceWorker.ready;
+    }
     fcmToken = await messaging.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: registration
