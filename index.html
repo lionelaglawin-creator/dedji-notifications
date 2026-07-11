@@ -504,6 +504,38 @@
     }
 
     // ============================================
+// ENREGISTRER LE TOKEN (utilisée pour l'activation ET le silencieux)
+// ============================================
+async function enregistrerToken(pays, silencieux) {
+  try {
+    const registration = await navigator.serviceWorker.register('/dedji-notifications/firebase-messaging-sw.js');
+    fcmToken = await messaging.getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (fcmToken) {
+      console.log('Token FCM:', fcmToken);
+      localStorage.setItem('allio_token_' + pays, fcmToken);
+
+      const db = firebase.database();
+      await db.ref('tokens/' + pays + '/' + fcmToken).set({
+        token: fcmToken,
+        dateAjout: new Date().toISOString()
+      });
+
+      if (!silencieux) {
+        afficherMessage('✅ Notifications activées pour ' + pays + ' !', 'success');
+      }
+    }
+  } catch (error) {
+    console.error('Erreur enregistrement token:', error);
+    if (!silencieux) {
+      afficherMessage('❌ Erreur : ' + error.message, 'error');
+    }
+  }
+}
+    // ============================================
     // ACTIVER LES NOTIFICATIONS
     // ============================================
     async function activerNotifications() {
@@ -540,8 +572,6 @@
 
         if (fcmToken) {
   console.log('Token FCM:', fcmToken);
-  document.getElementById('tokenValue').textContent = fcmToken;
-  document.getElementById('tokenBox').classList.add('visible');
   localStorage.setItem('allio_token_' + pays, fcmToken);
 
   // Enregistrement automatique dans la base (plus besoin de copier-coller)
