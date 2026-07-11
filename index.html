@@ -578,6 +578,12 @@ async function enregistrerToken(pays, nom, email, silencieux) {
     return;
   }
 
+  const ancienPays = localStorage.getItem('allio_pays');
+  const ancienToken = ancienPays ? localStorage.getItem('allio_token_' + ancienPays) : null;
+  if (ancienPays && ancienToken && ancienPays !== pays) {
+    await firebase.database().ref('tokens/' + ancienPays + '/' + ancienToken).remove();
+  }
+
   localStorage.setItem('allio_pays', pays);
   localStorage.setItem('allio_nom', nom);
   localStorage.setItem('allio_email', email);
