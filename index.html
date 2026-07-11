@@ -495,7 +495,7 @@
         dot.className = 'status-dot active';
         text.textContent = 'Notifications activées ✅';
         sub.textContent = 'Tu recevras les nouvelles commandes instantanément';
-        document.getElementById('activerBtn').textContent = '🔄 Rafraîchir le token';
+        document.getElementById('activerBtn').textContent = '✅ Notifications activées';
       } else if (Notification.permission === 'denied') {
         dot.className = 'status-dot error';
         text.textContent = 'Notifications bloquées ❌';
