@@ -26,7 +26,7 @@ messaging.onBackgroundMessage(function(payload) {
     body: payload.notification.body || 'Une nouvelle commande vient d\'arriver !',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    vibrate: [200, 100, 200, 100, 200],
+    vibrate: [200, 80, 200, 80, 300],
     tag: 'allio-commande',
     requireInteraction: true, // La notification reste jusqu'à ce qu'on la ferme
     actions: [
