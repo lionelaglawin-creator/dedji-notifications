@@ -382,7 +382,7 @@
   </div>
 
   <!-- INFOS CLOSEUSE -->
-  <div class="card">
+  <div class="card" id="infosCard">
     <div class="card-title">Mes informations</div>
     <p class="pays-label">Ton nom et ton email (le même que celui utilisé pour accéder au Google Sheet)</p>
     <input type="text" id="nomInput" placeholder="Ton nom complet" class="pays-select" style="margin-bottom: 10px;">
@@ -505,10 +505,12 @@
       }
 
       if (Notification.permission === 'granted') {
-        dot.className = 'status-dot active';
-        text.textContent = 'Notifications activées ✅';
-        sub.textContent = 'Tu recevras les nouvelles commandes instantanément';
-        document.getElementById('activerBtn').textContent = '✅ Notifications activées';
+  dot.className = 'status-dot active';
+  text.textContent = 'Notifications activées ✅';
+  sub.textContent = 'Tu recevras les nouvelles commandes instantanément';
+  document.getElementById('activerBtn').textContent = '✅ Notifications activées';
+  document.getElementById('infosCard').style.display = 'none';
+}
       } else if (Notification.permission === 'denied') {
         dot.className = 'status-dot error';
         text.textContent = 'Notifications bloquées ❌';
