@@ -504,12 +504,19 @@
         return;
       }
 
-      if (Notification.permission === 'granted') {
+      const dejaEnregistree = localStorage.getItem('allio_nom') && localStorage.getItem('allio_email') && localStorage.getItem('allio_pays');
+
+      if (Notification.permission === 'granted' && dejaEnregistree) {
   dot.className = 'status-dot active';
   text.textContent = 'Notifications activées ✅';
   sub.textContent = 'Tu recevras les nouvelles commandes instantanément';
-  document.getElementById('activerBtn').textContent = '🔔 Activer';
+  document.getElementById('activerBtn').textContent = '✅ Notifications activées';
   document.getElementById('infosCard').style.display = 'none';
+      } else if (Notification.permission === 'granted' && !dejaEnregistree) {
+  dot.className = 'status-dot active';
+  text.textContent = 'Permission accordée';
+  sub.textContent = 'Remplis tes informations et clique sur Activer';
+  document.getElementById('activerBtn').textContent = '🔔 Activer';
       } else if (Notification.permission === 'denied') {
         dot.className = 'status-dot error';
         text.textContent = 'Notifications bloquées ❌';
